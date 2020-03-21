@@ -2,20 +2,19 @@
 
 void Lexer::advance()
 {
-	position++;
-	if (position < text.length())
+	position.advance(cur_char);
+	if (position.getPos() < text.length())
 	{
-		cur_char = text[position];
+		cur_char = text[position.getPos()];
 	}else
 	{
-        cur_char = 0;
+		cur_char = 0;
 	}
-
 }
 
 void Lexer::make_tokens()
 {
-	advance();
+	cur_char = text[position.getPos()];
 
 	while(cur_char != 0)
 	{
@@ -55,6 +54,7 @@ void Lexer::make_tokens()
 			//ERROR
 		}
 	}
+	tokens[token_count++]=Token(token_type::tEOF);
 }
 
 Token Lexer::make_number_token()
@@ -99,4 +99,9 @@ std::string Lexer::print_tokens()
 	result += tokens[token_count - 1].printable();
 	result += "]";
     return result;
+}
+
+Token* Lexer::returnTokens()
+{
+    return tokens;
 }

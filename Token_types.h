@@ -8,7 +8,8 @@ extern enum token_type {tINT,
 						tDIV,
 						tLPAR,
 						tRPAR,
-						tFLOAT };
+						tFLOAT,
+						tEOF };
 
 extern const char* token_names[] = {"tINT",
 									"tPLUS",
@@ -17,6 +18,7 @@ extern const char* token_names[] = {"tINT",
 									"tDIV",
 									"tLPAR",
 									"tRPAR",
-									"tFLOAT"};
+									"tFLOAT",
+									"tEOF" };
 
 #endif

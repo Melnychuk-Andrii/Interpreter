@@ -5,6 +5,7 @@
 
 #include "code.h"
 #include "Lexer.h"
+#include "Parser.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -44,11 +45,17 @@ void __fastcall TForm1::RunCode(TObject *Sender)
 {
 	//start interpreting
 	char *dest = new char[1000];
-    to_narrow(Memo1->Text.c_str(), dest, 1000);
+	to_narrow(Memo1->Text.c_str(), dest, 1000);
+
 	Lexer lexer = Lexer(dest);
-	ShowMessage(dest);
 	lexer.make_tokens();
+
 	Memo2->Text=lexer.print_tokens().c_str();
+
+	Parser parser = Parser(lexer.returnTokens(), lexer.returnTokenCount());
+	SNode *root = parser.parse();
+
+	Memo2->Text = Memo2->Text + "\r\n\r\n" + printify(root);
 }
 //---------------------------------------------------------------------------
 
