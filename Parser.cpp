@@ -19,12 +19,12 @@ SNode* Parser::factor()
 		cur_tok->getType() == token_type::tMINUS)
 	{
 		advance();
-		return  crNodeChild(factor(), NULL, num_tok);
+		return  crNodeChild(factor(), NULL, num_tok, num_tok->getPos());
 	}else if (cur_tok->getType() == token_type::tINT ||
 			  cur_tok->getType() == token_type::tFLOAT)
 	{
 		advance();
-		return createNode(num_tok);
+		return createNode(num_tok, num_tok->getPos());
 	}else if (cur_tok->getType() == token_type::tLPAR)
 	{
 		advance();
@@ -34,10 +34,19 @@ SNode* Parser::factor()
 			  return exprr;
 		}else
 		{
-			//no bracket error
+			errors->parseErr();
+			std::string x = "";
+			errors->addErr(x + "Line: " + std::to_string(cur_tok->getPos().getLine()) + " column: " +
+						   std::to_string(cur_tok->getPos().getCol()) + ". Expected a ')'.");
+			return NULL;
 		}
 	}
-	
+
+	errors->parseErr();
+	std::string x = "";
+	errors->addErr(x + "Line: " + std::to_string(num_tok->getPos().getLine()) + " column: " +
+						   std::to_string(num_tok->getPos().getCol()) + ". Expected an int or a float.");
+	return NULL;
 }
 
 SNode* Parser::term()
@@ -51,7 +60,7 @@ SNode* Parser::term()
 		op_tok = *cur_tok;
 		advance();
 		right = factor();
-		left = crNodeChild(left, right, op_tok);
+		left = crNodeChild(left, right, op_tok, op_tok.getPos());
 	}
 
 	return left;
@@ -68,7 +77,7 @@ SNode* Parser::expr()
 		op_tok = *cur_tok;
 		advance();
 		right = term();
-		left = crNodeChild(left, right, op_tok);
+		left = crNodeChild(left, right, op_tok, op_tok.getPos());
 	}
 
 	return left;
@@ -81,7 +90,10 @@ SNode* Parser::parse()
 	SNode *res = expr();
 
 	if (cur_tok->getType() != token_type::tEOF) {
-        //syntax error
+		errors->parseErr();
+		std::string x = "";
+		errors->addErr(x + "Line: " + std::to_string(cur_tok->getPos().getLine()) + " column: " +
+						   std::to_string(cur_tok->getPos().getCol()) + ". Expected '+', '-', '*' or '/'.");
 	}
 
     return res;

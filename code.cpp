@@ -6,6 +6,8 @@
 #include "code.h"
 #include "Lexer.h"
 #include "Parser.h"
+#include "Error_class.h"
+#include "Interpreter_c.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -43,19 +45,33 @@ __fastcall TForm1::TForm1(TComponent* Owner)
 //---------------------------------------------------------------------------
 void __fastcall TForm1::RunCode(TObject *Sender)
 {
-	//start interpreting
+    Memo2->Text = "";
+	Err errors = Err();
 	char *dest = new char[1000];
 	to_narrow(Memo1->Text.c_str(), dest, 1000);
 
-	Lexer lexer = Lexer(dest);
+	Lexer lexer = Lexer(dest, &errors);
 	lexer.make_tokens();
 
 	Memo2->Text=lexer.print_tokens().c_str();
 
-	Parser parser = Parser(lexer.returnTokens(), lexer.returnTokenCount());
+	Parser parser = Parser(lexer.returnTokens(), lexer.returnTokenCount(), &errors);
 	SNode *root = parser.parse();
 
 	Memo2->Text = Memo2->Text + "\r\n\r\n" + printify(root);
+	if (errors.happened())
+	{
+		Memo2->Text = Memo2->Text + errors.printify().c_str();
+	}else
+	{
+		Interpreter inter = Interpreter(root, &errors);
+        Value *result;
+		result = inter.visit(root);
+		if (errors.happened())
+			Memo2->Text = Memo2->Text + errors.printify().c_str();
+		else
+			Memo2->Text = Memo2->Text + "\r\n\r\nRESULT: " + result->represent().c_str();
+	}
 }
 //---------------------------------------------------------------------------
 

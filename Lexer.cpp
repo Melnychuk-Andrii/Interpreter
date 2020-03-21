@@ -26,35 +26,38 @@ void Lexer::make_tokens()
 			tokens[token_count++]=make_number_token();
 		}else if (cur_char == '+')
 		{
-			tokens[token_count++]=Token(token_type::tPLUS);
+			tokens[token_count++]=Token(token_type::tPLUS, position);
 			advance();
 		}else if (cur_char == '-')
 		{
-			tokens[token_count++]=Token(token_type::tMINUS);
+			tokens[token_count++]=Token(token_type::tMINUS, position);
 			advance();
 		}else if (cur_char == '*')
 		{
-			tokens[token_count++]=Token(token_type::tMUL);
+			tokens[token_count++]=Token(token_type::tMUL, position);
 			advance();
 		}else if (cur_char == '/')
 		{
-			tokens[token_count++]=Token(token_type::tDIV);
+			tokens[token_count++]=Token(token_type::tDIV, position);
 			advance();
 		}else if (cur_char == '(')
 		{
-			tokens[token_count++]=Token(token_type::tLPAR);
+			tokens[token_count++]=Token(token_type::tLPAR, position);
 			advance();
 		}else if (cur_char == ')')
 		{
-			tokens[token_count++]=Token(token_type::tRPAR);
+			tokens[token_count++]=Token(token_type::tRPAR, position);
 			advance();
 		}else
 		{
-			advance();
-			//ERROR
+			errors->lexErr();
+			errors->addErr("Line: " + std::to_string(position.getLine()) + " column: " +
+						   std::to_string(position.getCol()) + ". Unexpected symbol '" +
+						   cur_char + "'.");
+            advance();
 		}
 	}
-	tokens[token_count++]=Token(token_type::tEOF);
+	tokens[token_count++]=Token(token_type::tEOF, position);
 }
 
 Token Lexer::make_number_token()
@@ -81,10 +84,10 @@ Token Lexer::make_number_token()
 
 	if (dot_count == 0)
 	{
-		return Token(token_type::tINT, num_in_str);
+		return Token(token_type::tINT, num_in_str, position);
 	}else
 	{
-		return Token(token_type::tFLOAT, num_in_str);
+		return Token(token_type::tFLOAT, num_in_str, position);
 	}
 
 }

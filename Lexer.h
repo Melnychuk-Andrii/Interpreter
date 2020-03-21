@@ -3,6 +3,7 @@
 
 #include "Token.h"
 #include "Position.h"
+#include "Error_class.h"
 #include <cstring>
 
 #define TOKEN_LEN 10000
@@ -17,15 +18,16 @@ private:
 	char cur_char;
 	Token *tokens;
 	int token_count;
+	Err *errors;
 
 public:
 	Lexer(){};
-	Lexer(char *x){text = x; position = Position(); cur_char = 0; token_count = 0; tokens=new Token[TOKEN_LEN];};
-	Lexer(std::string x){text = x; position = Position(); cur_char = 0; token_count = 0; tokens=new Token[TOKEN_LEN];};
+	Lexer(char *x, Err *e){text = x; position = Position(); cur_char = 0; token_count = 0; tokens=new Token[TOKEN_LEN]; errors = e;};
+	Lexer(std::string x, Err *e){text = x; position = Position(); cur_char = 0; token_count = 0; tokens=new Token[TOKEN_LEN];errors = e;};
 	void make_tokens();
 	void advance();
 	Token* returnTokens();
-    int returnTokenCount(){return token_count;}
+	int returnTokenCount(){return token_count;}
 	Token make_number_token();
 	std::string print_tokens();
 };

@@ -6,7 +6,33 @@
 
 #define END_LINE "\r\n"
 
-SNode* createNode(Token *dat)
+void freeNode(SNode *node)
+{
+	if (node->father)
+	{
+		if (node == node->father->left)
+		{
+			node->father->left = NULL;
+		}else if (node == node->father->right)
+		{
+			node->father->right = NULL;
+		}
+	}
+
+	if (node->left)
+	{
+		freeNode(node->left);
+	}
+
+	if (node->right)
+	{
+		freeNode(node->right);
+	}
+
+    delete(node);
+}
+
+SNode* createNode(Token *dat, Position p)
 {
 	SNode *nd = new SNode;
 
@@ -15,59 +41,23 @@ SNode* createNode(Token *dat)
 	nd->father = NULL;
 
 	nd->data = new Token(dat);
+	nd->pos = p;
 
 	return nd;
 }
 
-SNode* crNodeChild(SNode *datl, SNode *datr, Token operation)
+SNode* crNodeChild(SNode *datl, SNode *datr, Token operation, Position p)
 {
-	SNode *base = createNode(&operation);
+	SNode *base = createNode(&operation, p);
 
 	base->left = datl;
 	base->right = datr;
+    base->pos = p;
 
 	if (datl) datl->father = base;
 	if (datr) datr->father = base;
 
-    return base;
-}
-
-int countLeft(SNode *root)
-{
-	if (root == NULL) {
-		return 0;
-	}
-
-	return MAX(countLeft(root->left) + 1, countLeft(root->right) - 1);
-}
-
-int countRight(SNode *root)
-{
-    if (root == NULL) {
-		return 0;
-	}
-
-	return MAX(countRight(root->right) + 1, countRight(root->left) - 1);
-}
-
-int depthRight(SNode *root);
-
-int depthLeft(SNode *root)
-{
-	if (root == NULL) {
-		return 0;
-	}
-
-	return MAX(depthLeft(root->left) + 1, depthRight(root->left) + 1);
-}
-
-int depthRight(SNode *root)
-{
-    if (root == NULL) {
-		return 0;
-	}
-
-	return MAX(depthLeft(root->right) + 1, depthRight(root->right) + 1);
+	return base;
 }
 
 char* strcat1(char *dest, const char *source)
@@ -98,11 +88,6 @@ void print_rec(SNode *root, char *res, char *prefix, char *childPref)
 char* printify(SNode *root)
 {
 	if (root == NULL) return NULL;
-
-	int left_c = countLeft(root) - 1,
-		right_c = countRight(root) - 1,
-		left_d = depthLeft(root) - 1,
-		right_d = depthRight(root) - 1;
 
 	char *result = new char[1000000],
 		 *prefix = new char[1000000],

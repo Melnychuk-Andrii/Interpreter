@@ -11,14 +11,4 @@ extern enum token_type {tINT,
 						tFLOAT,
 						tEOF };
 
-extern const char* token_names[] = {"tINT",
-									"tPLUS",
-									"tMINUS",
-									"tMUL",
-									"tDIV",
-									"tLPAR",
-									"tRPAR",
-									"tFLOAT",
-									"tEOF" };
-
 #endif
