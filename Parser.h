@@ -20,6 +20,8 @@ public:
 	SNode* factor();
 	SNode* term();
 	SNode* expr();
+	SNode* c_expr();
+	SNode* a_expr();
 	SNode* parse();
 };
 

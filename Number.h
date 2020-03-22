@@ -18,6 +18,14 @@ public:
 	Number sub_by(Number x);
 	Number mul_by(Number x);
 	Number div_by(Number x);
+	Value* not_op();
+	Value* eq_to(Value* x);
+	Value* gr_then(Value* x);
+	Value* ls_then(Value* x);
+	Value* gre_then(Value* x);
+	Value* lse_then(Value* x);
+	Value* and_op(Value* x);
+	Value* or_op(Value* x);
 
 };
 

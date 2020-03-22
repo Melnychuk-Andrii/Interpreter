@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "Token_type_strings.h"
 
 Token* Parser::advance()
 {
@@ -68,9 +69,81 @@ SNode* Parser::term()
 
 SNode* Parser::expr()
 {
-	SNode *right, *left = term();
+	SNode *right, *left;
+	Token op_tok;
+	if (cur_tok->getType() == token_type::tKEYWORD)
+	{
+		op_tok = cur_tok;
+		advance();
+		left = expr();
+		if (left->data->getType() != token_type::tPLUS &&
+			left->data->getType() != token_type::tMINUS &&
+			left->data->getType() != token_type::tMUL &&
+			left->data->getType() != token_type::tDIV &&
+			left->data->getType() != token_type::tINT &&
+			left->data->getType() != token_type::tFLOAT &&
+			left->data->getType() != token_type::tENDL )
+		{
+            errors->parseErr();
+			std::string x = "";
+			errors->addErr(x + "Line: " + std::to_string(left->data->getPos().getLine()) + " column: " +
+						   std::to_string(left->data->getPos().getCol()) + ". Expected an int, a float, '(' or a ';'.");
+			return NULL;
+		}
+		left = crNodeChild(left, NULL, op_tok, op_tok.getPos());
+        return left;
+	}
+
+	left = c_expr();
+	while ( cur_tok->getType() == token_type::tKEYWORD &&
+		   (cur_tok->getValueIdx() == get_keyword_id("AND") ||
+			cur_tok->getValueIdx() == get_keyword_id("OR")))
+	{
+        op_tok = *cur_tok;
+		advance();
+		right = c_expr();
+		left = crNodeChild(left, right, op_tok, op_tok.getPos());
+	}
+
+	return left;
+}
+
+SNode* Parser::c_expr()
+{
+    SNode *right, *left;
 	Token op_tok;
 
+	if (cur_tok->getType() == token_type::tKEYWORD &&
+		cur_tok->getValueIdx() == get_keyword_id("NOT"))
+	{
+		op_tok = cur_tok;
+		advance();
+		left = crNodeChild(c_expr(), NULL, op_tok, op_tok.getPos());
+		return left;
+	}
+
+	left = a_expr();
+	while (cur_tok->getType() == token_type::tEQ ||
+		   cur_tok->getType() == token_type::tLT||
+		   cur_tok->getType() == token_type::tGT||
+		   cur_tok->getType() == token_type::tLTE||
+		   cur_tok->getType() == token_type::tGTE)
+	{
+		op_tok = *cur_tok;
+		advance();
+		right = a_expr();
+		left = crNodeChild(left, right, op_tok, op_tok.getPos());
+	}
+
+	return left;
+}
+
+SNode* Parser::a_expr()
+{
+    SNode *right, *left;
+	Token op_tok;
+
+    left = term();
 	while (cur_tok->getType() == token_type::tPLUS ||
 		   cur_tok->getType() == token_type::tMINUS)
 	{

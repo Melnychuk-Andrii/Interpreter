@@ -1,4 +1,5 @@
 #include "Lexer.h"
+#include "Token_type_strings.h"
 
 void Lexer::advance()
 {
@@ -24,6 +25,23 @@ void Lexer::make_tokens()
 		}else if (strchr(DIGITS, cur_char) || cur_char == '.')
 		{
 			tokens[token_count++]=make_number_token();
+		}else if ( (cur_char > 64 && cur_char < 91) ||
+				   (cur_char > 96 && cur_char < 123) )
+		{
+			tokens[token_count++]=make_keyword_token();
+		}else if (cur_char == '<')
+		{
+			tokens[token_count++]=make_less_token();
+		}else if (cur_char == '>')
+		{
+			tokens[token_count++]=make_greater_token();
+		}else if (cur_char == '!')
+		{
+			tokens[token_count++]=make_not_eq_token();
+			if (tokens[token_count-1].getValue() == "ERROR")
+			{
+				token_count--;
+			}
 		}else if (cur_char == '+')
 		{
 			tokens[token_count++]=Token(token_type::tPLUS, position);
@@ -40,6 +58,14 @@ void Lexer::make_tokens()
 		{
 			tokens[token_count++]=Token(token_type::tDIV, position);
 			advance();
+		}else if (cur_char == '=')
+		{
+			tokens[token_count++]=Token(token_type::tEQ, position);
+			advance();
+		}else if (cur_char == ';')
+		{
+			tokens[token_count++]=Token(token_type::tENDL, position);
+			advance();
 		}else if (cur_char == '(')
 		{
 			tokens[token_count++]=Token(token_type::tLPAR, position);
@@ -54,10 +80,92 @@ void Lexer::make_tokens()
 			errors->addErr("Line: " + std::to_string(position.getLine()) + " column: " +
 						   std::to_string(position.getCol()) + ". Unexpected symbol '" +
 						   cur_char + "'.");
-            advance();
+			advance();
 		}
 	}
 	tokens[token_count++]=Token(token_type::tEOF, position);
+}
+
+Token Lexer::make_greater_token()
+{
+    advance();
+	if (cur_char == '=')
+	{
+		advance();
+		return Token(token_type::tGTE, position);
+	}else
+	{
+		advance();
+		return Token(token_type::tGT, position);
+	}
+}
+
+Token Lexer::make_less_token()
+{
+    advance();
+	if (cur_char == '=')
+	{
+		advance();
+		return Token(token_type::tLTE, position);
+	}else
+	{
+		advance();
+		return Token(token_type::tLT, position);
+	}
+}
+
+Token Lexer::make_not_eq_token()
+{
+	std::string token_in_str = "";
+
+	advance();
+	if (cur_char == '=')
+	{
+		advance();
+		return Token(token_type::tNEQ, position);
+	}else
+	{
+		errors->lexErr();
+		errors->addErr("Line: " + std::to_string(position.getLine()) + " column: " +
+						   std::to_string(position.getCol()) + ". Expected '=' after '!'.");
+		advance();
+		return Token(token_type::tNEQ, "ERROR", position);
+	}
+}
+
+Token Lexer::make_keyword_token()
+{
+	std::string token_in_str = "";
+
+	while ( cur_char != 0 &&
+		   ((cur_char > 64 && cur_char < 91) ||
+			(cur_char > 96 && cur_char < 123)))
+	{
+		token_in_str += cur_char;
+		advance();
+	}
+
+	int is_keyword = 0;
+
+	for (int i = 0; i < KEYWORD_COUNT; i++)
+	{
+		if (strcmp(token_in_str.c_str(), keywords[i]) == 0)
+		{
+			is_keyword = 1;
+			break;
+		}
+	}
+
+	if (is_keyword)
+		return Token(token_type::tKEYWORD, token_in_str, position);
+	else
+	{
+		errors->lexErr();
+		errors->addErr("Line: " + std::to_string(position.getLine()) + " column: " +
+					   std::to_string(position.getCol()) + ". Unknown identifier '" +
+					   token_in_str + "'.");
+		return Token();
+	}
 }
 
 Token Lexer::make_number_token()

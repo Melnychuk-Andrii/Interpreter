@@ -20,6 +20,7 @@ public:
 	std::string printable();
     token_type getType(){return type;}
 	std::string getValue() { return value; }
+	int getValueIdx();
 	bool valIs() { return has_value; }
 	Position getPos(){return pos;}
 };

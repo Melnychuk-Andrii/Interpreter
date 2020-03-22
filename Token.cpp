@@ -12,3 +12,15 @@ std::string Token::printable()
 		return std::string(token_names[type]);
 	}
 }
+
+int Token::getValueIdx()
+{
+	for (int i = 0; i < KEYWORD_COUNT; i++)
+	{
+		if (strcmp(value.c_str(), keywords[i]) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}

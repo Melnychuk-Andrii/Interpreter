@@ -9,6 +9,14 @@ extern enum token_type {tINT,
 						tLPAR,
 						tRPAR,
 						tFLOAT,
-						tEOF };
+						tEOF,
+						tKEYWORD,
+						tEQ,
+						tENDL,
+						tNEQ,
+						tLT,
+						tGT,
+						tLTE,
+						tGTE };
 
 #endif

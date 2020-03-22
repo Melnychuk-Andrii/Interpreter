@@ -7,7 +7,7 @@
 #include <cstring>
 
 #define TOKEN_LEN 10000
-#define DELIM " \t\n\r"
+#define DELIM " \t\r\n"
 #define DIGITS "0123456789"
 
 class Lexer
@@ -29,6 +29,10 @@ public:
 	Token* returnTokens();
 	int returnTokenCount(){return token_count;}
 	Token make_number_token();
+	Token make_keyword_token();
+	Token make_not_eq_token();
+	Token make_greater_token();
+	Token make_less_token();
 	std::string print_tokens();
 };
 
