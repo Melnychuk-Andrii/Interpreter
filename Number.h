@@ -19,6 +19,7 @@ public:
 	Number mul_by(Number x);
 	Number div_by(Number x);
 	Value* not_op();
+    int evaluate();
 	Value* eq_to(Value* x);
 	Value* gr_then(Value* x);
 	Value* ls_then(Value* x);

@@ -8,6 +8,10 @@
 
 void freeNode(SNode *node)
 {
+	if (node == NULL)
+	{
+        return;
+	}
 	if (node->father)
 	{
 		if (node == node->father->left)
@@ -29,6 +33,11 @@ void freeNode(SNode *node)
 		freeNode(node->right);
 	}
 
+	if (node->condition)
+	{
+		freeNode(node->condition);
+	}
+
     delete(node);
 }
 
@@ -38,6 +47,7 @@ SNode* createNode(Token *dat, Position p)
 
 	nd->left = NULL;
 	nd->right = NULL;
+    nd->condition = NULL;
 	nd->father = NULL;
 
 	nd->data = new Token(dat);
@@ -58,6 +68,16 @@ SNode* crNodeChild(SNode *datl, SNode *datr, Token operation, Position p)
 	if (datr) datr->father = base;
 
 	return base;
+}
+
+SNode* crIfNode(SNode *datl, SNode *datr, SNode *datc, Token operation, Position p)
+{
+	SNode *base = crNodeChild(datl, datr, operation, p);
+
+	base->condition = datc;
+	if (datc) { datc->father = base; }
+
+    return base;
 }
 
 char* strcat1(char *dest, const char *source)
@@ -83,6 +103,8 @@ void print_rec(SNode *root, char *res, char *prefix, char *childPref)
 	else if (root->left || root->right) {
 		print_rec((root->left? root->left:root->right) , res, strcat1(childPref, ">------ "), strcat1(childPref, "        "));
 	}
+	if (root->condition)
+		print_rec(root->condition , res, strcat1(childPref, ">------ "), strcat1(childPref, "|       "));
 }
 
 char* printify(SNode *root)

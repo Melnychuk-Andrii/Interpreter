@@ -16,6 +16,7 @@ public:
 	Position getPos(){return pos;}
 	virtual Value* not_op(){return new Value(pos, errors);}
 	virtual std::string represent() { return ""; }
+    virtual int evaluate(){return 1;}
 	virtual Value* eq_to(Value* x){return this;}
 	virtual Value* gr_then(Value* x){return this;}
 	virtual Value* ls_then(Value* x){return this;}

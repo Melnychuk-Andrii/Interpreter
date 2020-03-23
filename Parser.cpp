@@ -41,6 +41,14 @@ SNode* Parser::factor()
 						   std::to_string(cur_tok->getPos().getCol()) + ". Expected a ')'.");
 			return NULL;
 		}
+	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
+			   cur_tok->getValueIdx() == get_keyword_id("if"))
+	{
+		return if_expr();
+	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
+			   cur_tok->getValueIdx() == get_keyword_id("while"))
+	{
+		return while_expr();
 	}
 
 	errors->parseErr();
@@ -71,7 +79,9 @@ SNode* Parser::expr()
 {
 	SNode *right, *left;
 	Token op_tok;
-	if (cur_tok->getType() == token_type::tKEYWORD)
+	if (cur_tok->getType() == token_type::tKEYWORD &&
+		cur_tok->getValueIdx() >= 0 &&
+		cur_tok->getValueIdx() <= 4)
 	{
 		op_tok = cur_tok;
 		advance();
@@ -154,6 +164,68 @@ SNode* Parser::a_expr()
 	}
 
 	return left;
+}
+
+SNode* Parser::if_expr()
+{
+	SNode *operation, *condition, *else_op;
+	Token if_tok;
+
+	if_tok = *cur_tok;
+	advance();
+	condition = expr();
+
+	if ( cur_tok->getType() == token_type::tKEYWORD &&
+		cur_tok->getValueIdx() == get_keyword_id("then"))
+	{
+		advance();
+		operation = expr();
+
+        if ( cur_tok->getType() == token_type::tKEYWORD &&
+			cur_tok->getValueIdx() == get_keyword_id("else"))
+		{
+			advance();
+			else_op = expr();
+
+			return crIfNode(operation, else_op, condition, if_tok, if_tok.getPos());
+		}
+        return crIfNode(operation, NULL, condition, if_tok, if_tok.getPos());
+	}else
+	{
+		errors->parseErr();
+		std::string x = "";
+		errors->addErr(x + "Line: " + std::to_string(cur_tok->getPos().getLine()) + " column: " +
+						   std::to_string(cur_tok->getPos().getCol()) + ". Expected 'then'.");
+	}
+
+	return NULL;
+}
+
+SNode* Parser::while_expr()
+{
+    SNode *operation, *condition, *else_op;
+	Token if_tok;
+
+	if_tok = *cur_tok;
+	advance();
+	condition = expr();
+
+	if ( cur_tok->getType() == token_type::tKEYWORD &&
+		cur_tok->getValueIdx() == get_keyword_id("then"))
+	{
+		advance();
+		operation = expr();
+
+		return crNodeChild(condition, operation, if_tok, if_tok.getPos());
+	}else
+	{
+		errors->parseErr();
+		std::string x = "";
+		errors->addErr(x + "Line: " + std::to_string(cur_tok->getPos().getLine()) + " column: " +
+						   std::to_string(cur_tok->getPos().getCol()) + ". Expected 'then'.");
+	}
+
+	return NULL;
 }
 
 SNode* Parser::parse()

@@ -1,7 +1,7 @@
 #ifndef TOKEN_TYPES
 #define TOKEN_TYPES
 
-extern enum token_type {tINT,
+enum token_type {tINT,
 						tPLUS,
 						tMINUS,
 						tMUL,

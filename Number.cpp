@@ -29,6 +29,20 @@ Value* Number::eq_to(Value* x)
 	return this;
 }
 
+int Number::evaluate()
+{
+	if (val > 0)
+	{
+		val = 1;
+		return 1;
+	}
+	else
+	{
+		val = 0;
+        return 0;
+	}
+}
+
 Value* Number::gr_then(Value* x)
 {
 	if (((Number*)x)->getVal() < val)

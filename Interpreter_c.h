@@ -18,6 +18,7 @@ public:
 	Value* visit(SNode *node);
 	Value* visitNum(SNode *node);
 	Value* visitBinOp(SNode *node);
+    Value* visitIfOp(SNode *node);
 	Value* visitUnOp(SNode *node);
 
 };

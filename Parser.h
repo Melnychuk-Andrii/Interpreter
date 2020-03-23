@@ -22,6 +22,8 @@ public:
 	SNode* expr();
 	SNode* c_expr();
 	SNode* a_expr();
+	SNode* if_expr();
+	SNode* while_expr();
 	SNode* parse();
 };
 

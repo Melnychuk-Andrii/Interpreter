@@ -1,10 +1,10 @@
 #ifndef TOKEN_TYPE_STRINGS
 #define TOKEN_TYPE_STRINGS
 
-#define KEYWORD_COUNT 8
+#define KEYWORD_COUNT 12
 #include <cstring>
 
-extern const char* token_names[] = { "tINT",
+const char* token_names[] = { "tINT",
 									"tPLUS",
 									"tMINUS",
 									"tMUL",
@@ -22,14 +22,18 @@ extern const char* token_names[] = { "tINT",
 									"tLTE",
 									"tGTE" };
 
-extern const char* keywords[] = { "move",
+const char* keywords[] = { "move",
 								  "turnleft",
 								  "turnright",
 								  "collect",
 								  "place",
 								  "AND",
 								  "OR",
-								  "NOT"};
+								  "NOT",
+								  "if",
+                                  "then",
+								  "else",
+								  "while"};
 
 int get_keyword_id(const char *word)
 {
