@@ -17,6 +17,7 @@ enum token_type {tINT,
 						tLT,
 						tGT,
 						tLTE,
-						tGTE };
+						tGTE,
+						tIDENT};
 
 #endif

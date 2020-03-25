@@ -29,6 +29,10 @@ void Lexer::make_tokens()
 				   (cur_char > 96 && cur_char < 123) )
 		{
 			tokens[token_count++]=make_keyword_token();
+            if (tokens[token_count-1].getValue() == "ERROR")
+			{
+				token_count--;
+			}
 		}else if (cur_char == '<')
 		{
 			tokens[token_count++]=make_less_token();
@@ -71,6 +75,14 @@ void Lexer::make_tokens()
 			tokens[token_count++]=Token(token_type::tLPAR, position);
 			advance();
 		}else if (cur_char == ')')
+		{
+			tokens[token_count++]=Token(token_type::tRPAR, position);
+			advance();
+		}else if (cur_char == '{')
+		{
+			tokens[token_count++]=Token(token_type::tLPAR, position);
+			advance();
+		}else if (cur_char == '}')
 		{
 			tokens[token_count++]=Token(token_type::tRPAR, position);
 			advance();
@@ -160,6 +172,31 @@ Token Lexer::make_keyword_token()
 		return Token(token_type::tKEYWORD, token_in_str, position);
 	else
 	{
+		for (int i = 0; i < token_count; ++i)
+		{
+			if (tokens[i].getType() == token_type::tIDENT &&
+				tokens[i].getValue() == token_in_str)
+			{
+				if (tokens[token_count-1].getValue() == "EVENT" ||
+					tokens[token_count-1].getValue() == "FUNCTION")
+				{
+					errors->lexErr();
+					errors->addErr("Line: " + std::to_string(position.getLine()) + " column: " +
+									std::to_string(position.getCol()) + ". Identifier '" +
+									token_in_str + "' already defined.");
+					return Token(token_type::tNEQ, "ERROR", position);
+				}else
+					return Token(token_type::tIDENT, token_in_str, position);
+			}
+		}
+		if (tokens[token_count-1].getValue() == "EVENT")
+		{
+			return Token(token_type::tNEQ, "ERROR", position);
+		}
+		if (tokens[token_count-1].getValue() == "FUNCTION")
+		{
+			return Token(token_type::tIDENT, token_in_str, position);
+		}
 		errors->lexErr();
 		errors->addErr("Line: " + std::to_string(position.getLine()) + " column: " +
 					   std::to_string(position.getCol()) + ". Unknown identifier '" +

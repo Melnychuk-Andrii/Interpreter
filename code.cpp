@@ -50,6 +50,19 @@ void __fastcall TForm1::RunCode(TObject *Sender)
 	char *dest = new char[1000];
 	to_narrow(Memo1->Text.c_str(), dest, 1000);
 
+	int grid[10][10]={{0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0},
+					  {0,0,0,0,1,1,0,0,0,0}};
+	int count = 20;
+	int sx = 10, sy = 10;
+
 	Lexer lexer = Lexer(dest, &errors);
 	lexer.make_tokens();
 
@@ -64,13 +77,11 @@ void __fastcall TForm1::RunCode(TObject *Sender)
 		Memo2->Text = Memo2->Text + errors.printify().c_str();
 	}else
 	{
-		Interpreter inter = Interpreter(root, &errors);
-        Value *result;
+		Interpreter inter = Interpreter(root, &errors, sx, sy, (int**)grid, count, Image1);
+		Value *result;
 		result = inter.visit(root);
 		if (errors.happened())
 			Memo2->Text = Memo2->Text + errors.printify().c_str();
-		else
-			Memo2->Text = Memo2->Text + "\r\n\r\nRESULT: " + result->represent().c_str();
 	}
 }
 //---------------------------------------------------------------------------
