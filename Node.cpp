@@ -38,6 +38,11 @@ void freeNode(SNode *node)
 		freeNode(node->condition);
 	}
 
+	if (node->if_next)
+	{
+        freeNode(node->if_next);
+	}
+
     delete(node);
 }
 
@@ -49,6 +54,7 @@ SNode* createNode(Token *dat, Position p)
 	nd->right = NULL;
     nd->condition = NULL;
 	nd->father = NULL;
+    nd->if_next = NULL;
 
 	nd->data = new Token(dat);
 	nd->pos = p;
@@ -70,11 +76,27 @@ SNode* crNodeChild(SNode *datl, SNode *datr, Token operation, Position p)
 	return base;
 }
 
-SNode* crIfNode(SNode *datl, SNode *datr, SNode *datc, Token operation, Position p)
+SNode* crNodeChildren(SNode *datl, SNode *datr, SNode *next_ops, Token operation, Position p)
+{
+	SNode *base = createNode(&operation, p);
+
+	base->left = datl;
+	base->right = datr;
+	base->pos = p;
+    base->if_next = next_ops;
+
+	if (datl) datl->father = base;
+	if (datr) datr->father = base;
+
+	return base;
+}
+
+SNode* crIfNode(SNode *datl, SNode *datr, SNode *datc, SNode *if_n, Token operation, Position p)
 {
 	SNode *base = crNodeChild(datl, datr, operation, p);
 
 	base->condition = datc;
+    base->if_next = if_n;
 	if (datc) { datc->father = base; }
 
     return base;
@@ -105,6 +127,9 @@ void print_rec(SNode *root, char *res, char *prefix, char *childPref)
 	}
 	if (root->condition)
 		print_rec(root->condition , res, strcat1(childPref, ">------ "), strcat1(childPref, "|       "));
+
+	if (root->if_next)
+		print_rec(root->if_next , res, strcat1(childPref, ">------ "), strcat1(childPref, "|       "));
 }
 
 char* printify(SNode *root)

@@ -3,6 +3,8 @@
 
 Value* Interpreter::visit(SNode *node)
 {
+    findEvents(node);
+
 	if (node == NULL) 
 	{
 		return new Number(1, Position(), errors);
@@ -53,6 +55,22 @@ Value* Interpreter::visit(SNode *node)
 	return new Number(1, Position(), errors);
 }
 
+void Interpreter::findEvents(SNode *node)
+{
+	if (node == NULL)
+	{
+		return;
+	}
+    if (node->data->getType() == token_type::tKEYWORD &&
+		node->data->getValueIdx() == get_keyword_id("EVENT"))
+	{
+		events[event_count++] = node;
+	}
+	findEvents(node->left);
+	findEvents(node->right);
+	findEvents(node->if_next);
+}
+
 void Interpreter::eventChecker()
 {
 	for (int i = 0; i < event_count; ++i)
@@ -67,82 +85,92 @@ void Interpreter::eventChecker()
 Value* Interpreter::visitActionOp(SNode *node)
 {
 	eventChecker();
-	if (node->data->getValueIdx() == get_keyword_id("move"))
-	{
-		if (orient == 0)
-		{
-			pos_x ++;
-			if (pos_x >= size_x)
-			{
-				pos_x = size_x - 1;
-			}else if (grid[pos_x][pos_y] < 0)
-			{
-			   pos_x--;
-			}
-		}else if (orient == 2)
-		{
-			pos_x --;
-			if (pos_x < 0)
-			{
-				pos_x = 0;
-			}else if (grid[pos_x][pos_y] < 0)
-			{
-			   pos_x++;
-			}
-		}else if (orient == 1)
-		{
-			pos_y ++;
-			if (pos_y >= size_y)
-			{
-				pos_y = size_y - 1;
-			}else if (grid[pos_x][pos_y] < 0)
-			{
-			   pos_y--;
-			}
-		}else if (orient == 3)
-		{
-			pos_y --;
-			if (pos_y < 0)
-			{
-				pos_y = 0;
-			}else if (grid[pos_x][pos_y] < 0)
-			{
-			   pos_y++;
-			}
-		}
-	}else if (node->data->getValueIdx() == get_keyword_id("turnleft"))
-	{
-	   orient--;
-	   if (orient < 0)
-	   {
-		   orient = 3;
-	   }
-	}else if (node->data->getValueIdx() == get_keyword_id("turnright"))
-	{
-	   orient++;
-	   if (orient > 3)
-	   {
-		   orient = 0;
-	   }
-	}else if (node->data->getValueIdx() == get_keyword_id("collect"))
-	{
-	   if (grid[pos_x][pos_y] > 0)
-	   {
-		  grid[pos_x][pos_y]--;
-		  items_count++;
-		  items_left--;
-	   }
-	}else if (node->data->getValueIdx() == get_keyword_id("place"))
-	{
-	   if (items_count > 0)
-	   {
-		  grid[pos_x][pos_y]++;
-		  items_count--;
-		  items_left++;
-	   }
-	}
+	int count = 0;
 
-	updateView();
+	if (node->left)
+        count = ((Number*)visit(node->left))->getVal();
+	else
+		count = 1;
+
+	for (int i = 0; i < count; ++i)
+	{
+		if (node->data->getValueIdx() == get_keyword_id("move"))
+		{
+			if (orient == 0)
+			{
+				pos_x ++;
+				if (pos_x >= size_x)
+				{
+					pos_x = size_x - 1;
+				}else if (grid[pos_x][pos_y] < 0)
+				{
+				   pos_x--;
+				}
+			}else if (orient == 2)
+			{
+				pos_x --;
+				if (pos_x < 0)
+				{
+					pos_x = 0;
+				}else if (grid[pos_x][pos_y] < 0)
+				{
+				   pos_x++;
+				}
+			}else if (orient == 1)
+			{
+				pos_y ++;
+				if (pos_y >= size_y)
+				{
+					pos_y = size_y - 1;
+				}else if (grid[pos_x][pos_y] < 0)
+				{
+				   pos_y--;
+				}
+			}else if (orient == 3)
+			{
+				pos_y --;
+				if (pos_y < 0)
+				{
+					pos_y = 0;
+				}else if (grid[pos_x][pos_y] < 0)
+				{
+				   pos_y++;
+				}
+			}
+		}else if (node->data->getValueIdx() == get_keyword_id("turnleft"))
+		{
+		   orient--;
+		   if (orient < 0)
+		   {
+			   orient = 3;
+		   }
+		}else if (node->data->getValueIdx() == get_keyword_id("turnright"))
+		{
+		   orient++;
+		   if (orient > 3)
+		 {
+			   orient = 0;
+		   }
+		}else if (node->data->getValueIdx() == get_keyword_id("collect"))
+		{
+		   if (grid[pos_x][pos_y] > 0)
+		   {
+			  grid[pos_x][pos_y]--;
+			  items_count++;
+			  items_left--;
+		   }
+		}else if (node->data->getValueIdx() == get_keyword_id("place"))
+		{
+		   if (items_count > 0)
+		   {
+			  grid[pos_x][pos_y]++;
+			  items_count--;
+			  items_left++;
+		   }
+		}
+        Sleep(500);
+		updateView();
+	}
 
 	if (node->right == NULL)
 	{
@@ -151,9 +179,42 @@ Value* Interpreter::visitActionOp(SNode *node)
 	return visit(node->right);
 }
 
+void Interpreter::drawSqr(int x, int y, TColor color, float border)
+{
+	img->Canvas->Brush->Color = color;
+	img->Canvas->Pen->Color = color;
+	img->Canvas->Rectangle(sqrx * x + sqrx * border, sqry * y + sqry * border,
+						   sqrx * ( x + 1 ) - sqrx * border,
+						   sqry * ( y + 1 ) - sqry * border);
+}
+
 void Interpreter::updateView()
 {
+	img->Canvas->Brush->Color = clBtnFace;
+	img->Canvas->FillRect ( img->Canvas->ClipRect );
 
+	for (int i = 0; i < size_x; ++i)
+	{
+		for (int j = 0; j < size_y; ++j)
+		{
+			if(grid[i][j] == -1)
+			{
+				drawSqr(i, j, clMaroon, 0);
+			}else if(grid[i][j] >= 0)
+			{
+				drawSqr(i, j, clGreen, 0);
+				if(grid[i][j] == 1)
+				{
+					drawSqr(i, j, clYellow, 0.3);
+				}
+			}
+			if (pos_x == i && pos_y == j)
+			{
+				drawSqr(i, j, clAqua, 0.2);
+			}
+		}
+	}
+	img->Repaint();
 }
 
 Value* Interpreter::visitFuncCallOp(SNode *node)
@@ -171,30 +232,31 @@ Value* Interpreter::visitFuncCallOp(SNode *node)
 	{
          return NULL;
 	}
-	return visit(functions[index]->left);
+	visit(functions[index]->left);
+    return visit(node->right);
 }
 
 Value* Interpreter::visitFuncOp(SNode *node)
 {
 	functions[func_count++] = node;
-	return new Number(1, Position(), errors);
+	return visit(node->if_next);
 }
 
 Value* Interpreter::visitEventOp(SNode *node)
 {
-	events[event_count++] = node;
-	return new Number(1, Position(), errors);
+	return visit(node->if_next);
 }
 
 Value* Interpreter::visitWhileOp(SNode *node)
 {
-	Value *res;
+	Value *res = visit(node->left);
 	while (res->evaluate())
 	{
 		visit(node->right);
 		if (errors->happened()){ return NULL; }
         res = visit(node->left);
 	}
+    res = visit(node->if_next);
     return res;
 }
 
@@ -238,6 +300,7 @@ Value* Interpreter::visitIfOp(SNode *node)
 	{
 		delete(cond);
 		res = visit(node->left);
+		res = visit(node->if_next);
 		return res;
 	}else
 	{
@@ -245,10 +308,12 @@ Value* Interpreter::visitIfOp(SNode *node)
 		{
 			delete(cond);
 			res = visit(node->right);
+            res = visit(node->if_next);
 			return res;
 		}else
 		{
-			return cond;
+			res = visit(node->if_next);
+			return res;
 		}
 	}
 }
@@ -257,7 +322,7 @@ Value* Interpreter::visitBinOp(SNode *node)
 {
 	Value* val1 = visit(node->left);
 	if (errors->happened()){ delete(val1); freeNode(node); return NULL; }
-	Value* val2;
+	Value* val2 = NULL;
 
 
 	if (node->data->getType() == token_type::tPLUS)

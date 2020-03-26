@@ -151,7 +151,9 @@ Token Lexer::make_keyword_token()
 
 	while ( cur_char != 0 &&
 		   ((cur_char > 64 && cur_char < 91) ||
-			(cur_char > 96 && cur_char < 123)))
+			(cur_char > 96 && cur_char < 123) ||
+			cur_char == '_' ||
+			(cur_char > 47 && cur_char < 58)))
 	{
 		token_in_str += cur_char;
 		advance();

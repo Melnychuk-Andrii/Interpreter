@@ -26,6 +26,9 @@ SNode* Parser::factor()
 	{
 		advance();
 		return createNode(num_tok, num_tok->getPos());
+	}else if (cur_tok->getType() == token_type::tRPAR)
+	{
+        return NULL;
 	}else if (cur_tok->getType() == token_type::tLPAR)
 	{
 		advance();
@@ -65,19 +68,19 @@ SNode* Parser::factor()
 	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
 			   cur_tok->getValueIdx() == get_keyword_id("POS_X"))
 	{
-		return createNode(num_tok, num_tok->getPos());
+		return (advance(), createNode(num_tok, num_tok->getPos()));
 	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
 			   cur_tok->getValueIdx() == get_keyword_id("POS_Y"))
 	{
-		return createNode(num_tok, num_tok->getPos());
+		return (advance(), createNode(num_tok, num_tok->getPos()));
 	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
 			   cur_tok->getValueIdx() == get_keyword_id("ITEM_COUNT"))
 	{
-		return createNode(num_tok, num_tok->getPos());
+		return (advance(), createNode(num_tok, num_tok->getPos()));
 	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
 			   cur_tok->getValueIdx() == get_keyword_id("ITEMS_LEFT"))
 	{
-		return createNode(num_tok, num_tok->getPos());
+		return (advance(), createNode(num_tok, num_tok->getPos()));
 	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
 			  (cur_tok->getValueIdx() == get_keyword_id("move") ||
 			   cur_tok->getValueIdx() == get_keyword_id("turnleft") ||
@@ -120,14 +123,16 @@ SNode* Parser::term()
 
 SNode* Parser::expr()
 {
-	SNode *right, *left;
+	SNode *right = NULL, *left;
 	Token op_tok;
 
+	if (cur_tok->getType() == token_type::tEOF)
+	{
+        return NULL;
+	}
+
 	left = c_expr();
-	if ( cur_tok->getType() == token_type::tKEYWORD &&
-		   (cur_tok->getValueIdx() == get_keyword_id("AND") ||
-			cur_tok->getValueIdx() == get_keyword_id("OR")))
-	{while ( cur_tok->getType() == token_type::tKEYWORD &&
+	while ( cur_tok->getType() == token_type::tKEYWORD &&
 		   (cur_tok->getValueIdx() == get_keyword_id("AND") ||
 			cur_tok->getValueIdx() == get_keyword_id("OR")))
 	{
@@ -136,18 +141,14 @@ SNode* Parser::expr()
 		right = c_expr();
 		left = crNodeChild(left, right, op_tok, op_tok.getPos());
 	}
-	}else
-	{
-        op_tok = cur_tok;
-		right = expr();
-	}
 
-	return crNodeChild(left, right, op_tok, op_tok.getPos());
+
+	return left;
 }
 
 SNode* Parser::func_expr()
 {
-	SNode *operation, *condition;
+	SNode *operation, *condition, *next_ops;
 	Token f_tok;
 
 	if ( cur_tok->getType() == token_type::tKEYWORD &&
@@ -160,7 +161,9 @@ SNode* Parser::func_expr()
 			condition = createNode(cur_tok, cur_tok->getPos());
 			advance();
 			operation = expr();
-			return crNodeChild(operation, condition, f_tok, f_tok.getPos());
+
+			next_ops = factor();
+			return crNodeChildren(operation, condition, next_ops, f_tok, f_tok.getPos());
 		}else {
             errors->parseErr();
 			std::string x = "";
@@ -170,7 +173,8 @@ SNode* Parser::func_expr()
 		}
 	}else if (cur_tok->getType() == token_type::tIDENT)
 	{
-		return createNode(cur_tok, cur_tok->getPos());
+		next_ops = factor();
+		return crNodeChild(NULL, next_ops, cur_tok, cur_tok->getPos());
 	}else
 	{
 		errors->parseErr();
@@ -203,7 +207,8 @@ SNode* Parser::oper_expr()
 			left->data->getType() != token_type::tMUL &&
 			left->data->getType() != token_type::tDIV &&
 			left->data->getType() != token_type::tINT &&
-			left->data->getType() != token_type::tFLOAT)
+			left->data->getType() != token_type::tFLOAT &&
+			left->data->getType() != token_type::tKEYWORD)
 		{
 			errors->parseErr();
 			std::string x = "";
@@ -221,7 +226,7 @@ SNode* Parser::oper_expr()
 		}
 
 		advance();
-		right = oper_expr();
+		right = factor();
 		left = crNodeChild(left, right, op_tok, op_tok.getPos());
         return left;
 	}
@@ -278,7 +283,7 @@ SNode* Parser::a_expr()
 
 SNode* Parser::event_expr()
 {
-	SNode *operation, *condition, *else_op;
+	SNode *operation, *condition, *next_ops;
 	Token if_tok;
 
 	if_tok = *cur_tok;
@@ -291,8 +296,8 @@ SNode* Parser::event_expr()
 		if (cur_tok->getType() == token_type::tLPAR)
 		{
 			operation = expr();
-            advance();
-			return crNodeChild(condition, operation, if_tok, if_tok.getPos());
+            next_ops = factor();
+			return crNodeChildren(condition, operation, next_ops, if_tok, if_tok.getPos());
 		}else
 		{
             errors->parseErr();
@@ -313,7 +318,7 @@ SNode* Parser::event_expr()
 
 SNode* Parser::if_expr()
 {
-	SNode *operation, *condition, *else_op;
+	SNode *operation, *condition, *else_op, *if_next;
 	Token if_tok;
 
 	if_tok = *cur_tok;
@@ -332,9 +337,11 @@ SNode* Parser::if_expr()
 			advance();
 			else_op = expr();
 
-			return crIfNode(operation, else_op, condition, if_tok, if_tok.getPos());
+			if_next = factor();
+			return crIfNode(operation, else_op, condition, if_next, if_tok, if_tok.getPos());
 		}
-		return crIfNode(operation, NULL, condition, if_tok, if_tok.getPos());
+		if_next = factor();
+		return crIfNode(operation, NULL, condition, if_next, if_tok, if_tok.getPos());
 	}else
 	{
 		errors->parseErr();
@@ -348,7 +355,7 @@ SNode* Parser::if_expr()
 
 SNode* Parser::while_expr()
 {
-    SNode *operation, *condition, *else_op;
+	SNode *operation, *condition, *else_op, *next_ops;
 	Token if_tok;
 
 	if_tok = *cur_tok;
@@ -361,7 +368,8 @@ SNode* Parser::while_expr()
 		advance();
 		operation = expr();
 
-		return crNodeChild(condition, operation, if_tok, if_tok.getPos());
+		next_ops = factor();
+		return crNodeChildren(condition, operation, next_ops, if_tok, if_tok.getPos());
 	}else
 	{
 		errors->parseErr();

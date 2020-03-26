@@ -1,6 +1,8 @@
 #ifndef Interpreter_cH
 #define Interpreter_cH
 
+#include <string>
+
 #include "Node.h"
 #include "Number.h"
 #include "Action.h"
@@ -28,13 +30,24 @@ private:
 	int orient;  //r - 0 clockwise ++
 	int **grid;
 	TImage *img;
+	int sqrx, sqry;
 
 public:
 	Interpreter(){}
-	Interpreter(SNode *r, Err *er, int s_x, int s_y, int **gr, int item_l, TImage *imgs){
+
+	Interpreter(SNode *r, Err *er, int s_x, int s_y, int **gr, int item_l, TImage *imgg){
 				root = r; errors = er; func_count = 0; event_count = 0; pos_x = 0;
 				pos_y = 0; items_count = 0; items_left = item_l; orient = 0;
-				size_x = s_x; size_y = s_y; grid = gr; img = imgs;}
+				size_x = s_x; size_y = s_y; grid = gr; img = imgg;
+				sqrx = img->Width / size_x; sqry = img->Height / size_y;
+				updateView();}
+
+	Interpreter(int s_x, int s_y, int **gr, int item_l, TImage *imgg){
+				pos_x = 0; pos_y = 0; items_count = 0; items_left = item_l;
+				orient = 0; size_x = s_x; size_y = s_y; grid = gr; img = imgg;
+				sqrx = img->Width / size_x; sqry = img->Height / size_y;
+				updateView();}
+
 	Value* visit(SNode *node);
 	Value* visitNum(SNode *node);
 	Value* visitBinOp(SNode *node);
@@ -46,7 +59,9 @@ public:
 	Value* visitEventOp(SNode *node);
 	Value* visitWhileOp(SNode *node);
 	void eventChecker();
-    void updateView();
+	void updateView();
+	void findEvents(SNode *node);
+    void drawSqr(int x, int y, TColor color, float border);
 
 };
 
