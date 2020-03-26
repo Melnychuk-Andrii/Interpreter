@@ -1,0 +1,10 @@
+Win32
+__recovery
+__history
+__astcache
+/*.cbproj
+/*.dfm
+/*.local
+/*.bmp
+/*.res
+/*.txt
