@@ -1,7 +1,7 @@
 #ifndef TOKEN_TYPE_STRINGS
 #define TOKEN_TYPE_STRINGS
 
-#define KEYWORD_COUNT 18
+#define KEYWORD_COUNT 22
 #include <cstring>
 
 const char* token_names[] = { "tINT",
@@ -40,7 +40,11 @@ const char* keywords[] = { "move",
 								  "ITEM_COUNT",
 								  "ITEMS_LEFT",
 								  "EVENT",
-								  "FUNCTION"};
+								  "FUNCTION",
+								  "isWallLeft",
+								  "isWallRight",
+								  "isWallFront",
+								  "isFruit"};
 
 int get_keyword_id(const char *word)
 {

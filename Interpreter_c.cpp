@@ -3,7 +3,11 @@
 
 Value* Interpreter::visit(SNode *node)
 {
-    findEvents(node);
+	if (checkedEvents == 0)
+	{
+		checkedEvents = 1;
+		findEvents(node);
+	}
 
 	if (node == NULL) 
 	{
@@ -15,7 +19,11 @@ Value* Interpreter::visit(SNode *node)
 		(node->data->getValueIdx() == get_keyword_id("POS_X") ||
 		 node->data->getValueIdx() == get_keyword_id("POS_Y") ||
 		 node->data->getValueIdx() == get_keyword_id("ITEM_COUNT") ||
-		 node->data->getValueIdx() == get_keyword_id("ITEMS_LEFT"))))
+		 node->data->getValueIdx() == get_keyword_id("ITEMS_LEFT")||
+		 node->data->getValueIdx() == get_keyword_id("isWallLeft")||
+		 node->data->getValueIdx() == get_keyword_id("isWallRight")||
+		 node->data->getValueIdx() == get_keyword_id("isWallFront")||
+		 node->data->getValueIdx() == get_keyword_id("isFruit"))))
 	{
 		return visitNum(node);
 	}else if (node->data->getType() == token_type::tKEYWORD &&
@@ -77,14 +85,16 @@ void Interpreter::eventChecker()
 	{
 		if (visit(events[i]->left)->evaluate())
 		{
+			inEvent = 1;
 			visit(events[i]->right);
+            inEvent = 0;
 		}
     }
 }
 
 Value* Interpreter::visitActionOp(SNode *node)
 {
-	eventChecker();
+	if (inEvent == 0) eventChecker();
 	int count = 0;
 
 	if (node->left)
@@ -168,7 +178,7 @@ Value* Interpreter::visitActionOp(SNode *node)
 			  items_left++;
 		   }
 		}
-        Sleep(500);
+		Sleep(200);
 		updateView();
 	}
 
@@ -177,6 +187,57 @@ Value* Interpreter::visitActionOp(SNode *node)
 		return NULL;
 	}
 	return visit(node->right);
+}
+
+void Interpreter::drawEyes(int x, int y, TColor color, float border)
+{
+	img->Canvas->Brush->Color = color;
+	img->Canvas->Pen->Color = color;
+	if (orient == 0)
+	{
+		img->Canvas->Rectangle(sqrx * ( x + 1 ) - 1.7 * sqrx * border,
+						   sqry * ( y + 1 ) - 2.1 * sqry * border,
+						   sqrx * ( x + 1 ) - 1 * sqrx * border,
+						   sqry * ( y + 1 ) - 1.2 * sqry * border);
+
+		img->Canvas->Rectangle(sqrx * ( x + 1 ) - 1.7 * sqrx * border,
+						   sqry * ( y + 1 ) - 3.7 * sqry * border,
+						   sqrx * ( x + 1 ) - 1 * sqrx * border,
+						   sqry * ( y + 1 ) - 2.8 * sqry * border);
+	}else if (orient == 2)
+	{
+		img->Canvas->Rectangle(sqrx * ( x + 1 ) - 3.8 * sqrx * border,
+						   sqry * ( y + 1 ) - 2.1 * sqry * border,
+						   sqrx * ( x + 1 ) - 3.1 * sqrx * border,
+						   sqry * ( y + 1 ) - 1.2 * sqry * border);
+
+		img->Canvas->Rectangle(sqrx * ( x + 1 ) - 3.8 * sqrx * border,
+						   sqry * ( y + 1 ) - 3.7 * sqry * border,
+						   sqrx * ( x + 1 ) - 3.1 * sqrx * border,
+						   sqry * ( y + 1 ) - 2.8 * sqry * border);
+	}else if (orient == 3)
+	{
+		img->Canvas->Rectangle(sqry * ( x + 1 ) - 2.1 * sqry * border,
+							sqrx * ( y + 1 ) - 3.8 * sqrx * border,
+							sqry * ( x + 1 ) - 1.2 * sqry * border,
+							sqrx * ( y + 1 ) - 3.1 * sqrx * border);
+
+		img->Canvas->Rectangle(sqry * ( x + 1 ) - 3.7 * sqry * border,
+							sqrx * ( y + 1 ) - 3.8 * sqrx * border,
+							sqry * ( x + 1 ) - 2.8 * sqry * border,
+							sqrx * ( y + 1 ) - 3.1 * sqrx * border);
+	}else
+	{
+		img->Canvas->Rectangle(sqry * ( x + 1 ) - 2.1 * sqry * border,
+							sqrx * ( y + 1 ) - 2.2 * sqrx * border,
+							sqry * ( x + 1 ) - 1.2 * sqry * border,
+							sqrx * ( y + 1 ) - 1.5 * sqrx * border);
+
+		img->Canvas->Rectangle(sqry * ( x + 1 ) - 3.7 * sqry * border,
+							sqrx * ( y + 1 ) - 2.2 * sqrx * border,
+							sqry * ( x + 1 ) - 2.8 * sqry * border,
+							sqrx * ( y + 1 ) - 1.5 * sqrx * border);
+    }
 }
 
 void Interpreter::drawSqr(int x, int y, TColor color, float border)
@@ -199,7 +260,7 @@ void Interpreter::updateView()
 		{
 			if(grid[i][j] == -1)
 			{
-				drawSqr(i, j, clMaroon, 0);
+				drawSqr(i, j, clMedGray, 0);
 			}else if(grid[i][j] >= 0)
 			{
 				drawSqr(i, j, clGreen, 0);
@@ -211,6 +272,7 @@ void Interpreter::updateView()
 			if (pos_x == i && pos_y == j)
 			{
 				drawSqr(i, j, clAqua, 0.2);
+				drawEyes(i, j, clNavy, 0.2);
 			}
 		}
 	}
@@ -250,7 +312,7 @@ Value* Interpreter::visitEventOp(SNode *node)
 Value* Interpreter::visitWhileOp(SNode *node)
 {
 	Value *res = visit(node->left);
-	while (res->evaluate())
+	while (((Number*)res)->evaluate())
 	{
 		visit(node->right);
 		if (errors->happened()){ return NULL; }
@@ -283,7 +345,101 @@ Value* Interpreter::visitNum(SNode *node)
 	{
 		res = new Number(items_left, node->pos, errors);
 	}
-	else
+	else  if (node->data->getType() == token_type::tKEYWORD &&
+		node->data->getValueIdx() == get_keyword_id("isWallLeft"))
+	{
+		int result;
+		if (orient == 0)
+		{
+			if (pos_y > 0)
+				result = (grid[pos_x][pos_y - 1] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 1)
+		{
+			if (pos_x < size_x - 1)
+				result = (grid[pos_x + 1][pos_y] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 2)
+		{
+			if (pos_y < size_y - 1)
+				result = (grid[pos_x][pos_y + 1] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 3)
+		{
+			if (pos_x > 0)
+				result = (grid[pos_x - 1][pos_y] == -1 ? 1:0);
+			else
+				result = 1;
+		}
+		res = new Number(result, node->pos, errors);
+	}else  if (node->data->getType() == token_type::tKEYWORD &&
+		node->data->getValueIdx() == get_keyword_id("isWallRight"))
+	{
+		int result;
+		if (orient == 2)
+		{
+			if (pos_y > 0)
+				result = (grid[pos_x][pos_y - 1] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 3)
+		{
+			if (pos_x < size_x - 1)
+				result = (grid[pos_x + 1][pos_y] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 0)
+		{
+			if (pos_y < size_y - 1)
+				result = (grid[pos_x][pos_y + 1] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 1)
+		{
+			if (pos_x > 0)
+				result = (grid[pos_x - 1][pos_y] == -1 ? 1:0);
+			else
+				result = 1;
+		}
+		res = new Number(result, node->pos, errors);
+	}else  if (node->data->getType() == token_type::tKEYWORD &&
+		node->data->getValueIdx() == get_keyword_id("isWallFront"))
+	{
+		int result;
+		if (orient == 3)
+		{
+			if (pos_y > 0)
+				result = (grid[pos_x][pos_y - 1] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 0)
+		{
+			if (pos_x < size_x - 1)
+				result = (grid[pos_x + 1][pos_y] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 1)
+		{
+			if (pos_y < size_y - 1)
+				result = (grid[pos_x][pos_y + 1] == -1 ? 1:0);
+			else
+				result = 1;
+		}else if (orient == 2)
+		{
+			if (pos_x > 0)
+				result = (grid[pos_x - 1][pos_y] == -1 ? 1:0);
+			else
+				result = 1;
+		}
+		res = new Number(result, node->pos, errors);
+	}else  if (node->data->getType() == token_type::tKEYWORD &&
+		node->data->getValueIdx() == get_keyword_id("isFruit"))
+	{
+		res = new Number((grid[pos_x][pos_y] == 1 ? 1:0), node->pos, errors);
+	}else
 	{
 	res = new Number(std::stof(node->data->getValue()), node->pos, errors);
 
@@ -294,7 +450,6 @@ Value* Interpreter::visitNum(SNode *node)
 Value* Interpreter::visitIfOp(SNode *node)
 {
 	Value *cond = visit(node->condition), *res;
-	free(node->condition);
 
 	if (((Number*)cond)->evaluate())
 	{
@@ -321,7 +476,7 @@ Value* Interpreter::visitIfOp(SNode *node)
 Value* Interpreter::visitBinOp(SNode *node)
 {
 	Value* val1 = visit(node->left);
-	if (errors->happened()){ delete(val1); freeNode(node); return NULL; }
+	if (errors->happened()){ delete(val1); return NULL; }
 	Value* val2 = NULL;
 
 

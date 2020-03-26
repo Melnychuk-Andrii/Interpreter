@@ -15,7 +15,7 @@ public:
 	Value(Position p, Err *e){pos = p; errors = e;}
 	Position getPos(){return pos;}
 	virtual Value* not_op(){return new Value(pos, errors);}
-    virtual double getVal(){return 1;}
+    virtual int getVal(){return 1;}
 	virtual std::string represent() { return ""; }
     virtual int evaluate(){return 1;}
 	virtual Value* eq_to(Value* x){return this;}

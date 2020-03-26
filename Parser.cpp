@@ -66,19 +66,14 @@ SNode* Parser::factor()
 	{
 		return func_expr();
 	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
-			   cur_tok->getValueIdx() == get_keyword_id("POS_X"))
-	{
-		return (advance(), createNode(num_tok, num_tok->getPos()));
-	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
-			   cur_tok->getValueIdx() == get_keyword_id("POS_Y"))
-	{
-		return (advance(), createNode(num_tok, num_tok->getPos()));
-	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
-			   cur_tok->getValueIdx() == get_keyword_id("ITEM_COUNT"))
-	{
-		return (advance(), createNode(num_tok, num_tok->getPos()));
-	}else if ( cur_tok->getType() == token_type::tKEYWORD &&
-			   cur_tok->getValueIdx() == get_keyword_id("ITEMS_LEFT"))
+			  (cur_tok->getValueIdx() == get_keyword_id("POS_X") ||
+			   cur_tok->getValueIdx() == get_keyword_id("POS_Y") ||
+			   cur_tok->getValueIdx() == get_keyword_id("ITEMS_LEFT") ||
+			   cur_tok->getValueIdx() == get_keyword_id("ITEM_COUNT") ||
+			   cur_tok->getValueIdx() == get_keyword_id("isWallLeft") ||
+			   cur_tok->getValueIdx() == get_keyword_id("isWallRight") ||
+			   cur_tok->getValueIdx() == get_keyword_id("isWallFront") ||
+			   cur_tok->getValueIdx() == get_keyword_id("isFruit")))
 	{
 		return (advance(), createNode(num_tok, num_tok->getPos()));
 	}else if ( cur_tok->getType() == token_type::tKEYWORD &&

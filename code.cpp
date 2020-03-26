@@ -51,8 +51,6 @@ void __fastcall TForm1::RunCode(TObject *Sender)
 	Err errors = Err();
 	char *dest = new char[1000];
 	to_narrow(Memo1->Text.c_str(), dest, 1000);
-	Randomize();
-	Randomize();
 
 	Lexer lexer = Lexer(dest, &errors);
 	lexer.make_tokens();
@@ -80,11 +78,9 @@ void __fastcall TForm1::RunCode(TObject *Sender)
 
 void __fastcall TForm1::BitBtn2Click(TObject *Sender)
 {
-    grid = new int*[10];
 	count = 0;
 	for (int i = 0; i < 10; i++)
 	{
-		grid[i] = new int[10];
 		for (int j = 0; j < 10; ++j)
 		{
 			if (i == 0 && j == 0)
@@ -99,6 +95,36 @@ void __fastcall TForm1::BitBtn2Click(TObject *Sender)
 			{
 				count++;
 			}
+		}
+	}
+	sx = 10, sy = 10;
+	inter = Interpreter(sx, sy, grid, count, Image1);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::FormCreate(TObject *Sender)
+{
+    Randomize();
+	Randomize();
+
+	grid = new int*[10];
+	int data[10][10] = {{0,-1,1,0,0,0,-1,0,0,0},
+						{0,-1,-1,-1,-1,0,0,0,-1,0},
+						{0,0,0,-1,0,0,-1,-1,-1,0},
+						{-1,-1,0,-1,0,-1,-1,0,0,0},
+						{0,0,0,-1,0,-1,0,0,-1,-1},
+						{0,-1,0,0,0,-1,0,-1,0,0},
+						{0,-1,-1,0,-1,-1,0,0,0,-1},
+						{0,-1,0,0,0,0,0,-1,-1,-1},
+						{0,-1,0,-1,-1,0,-1,-1,0,1},
+						{0,-1,0,-1,1,0,0,0,0,-1}};
+	count = 3;
+	for (int i = 0; i < 10; i++)
+	{
+		grid[i] = new int[10];
+		for (int j = 0; j < 10; ++j)
+		{
+			grid[i][j] = data[i][j];
 		}
 	}
 	sx = 10, sy = 10;

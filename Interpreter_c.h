@@ -27,10 +27,12 @@ private:
 	int func_count, event_count;
 	int size_x, size_y;
 	int pos_x, pos_y, items_count, items_left;
-	int orient;  //r - 0 clockwise ++
+	int orient;  //right = 0 clockwise ++
 	int **grid;
 	TImage *img;
 	int sqrx, sqry;
+	int checkedEvents;
+	int inEvent;
 
 public:
 	Interpreter(){}
@@ -40,7 +42,7 @@ public:
 				pos_y = 0; items_count = 0; items_left = item_l; orient = 0;
 				size_x = s_x; size_y = s_y; grid = gr; img = imgg;
 				sqrx = img->Width / size_x; sqry = img->Height / size_y;
-				updateView();}
+				updateView(); checkedEvents = 0; inEvent = 0;}
 
 	Interpreter(int s_x, int s_y, int **gr, int item_l, TImage *imgg){
 				pos_x = 0; pos_y = 0; items_count = 0; items_left = item_l;
@@ -61,7 +63,8 @@ public:
 	void eventChecker();
 	void updateView();
 	void findEvents(SNode *node);
-    void drawSqr(int x, int y, TColor color, float border);
+	void drawSqr(int x, int y, TColor color, float border);
+    void drawEyes(int x, int y, TColor color, float border);
 
 };
 

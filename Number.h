@@ -13,7 +13,7 @@ public:
 	Number(double x, Position p, Err *e):Value(p, e){val = x;}
 
     std::string represent();
-    double getVal(){return val;}
+    int getVal(){return (int)val;}
 	Number add_to(Number x);
 	Number sub_by(Number x);
 	Number mul_by(Number x);

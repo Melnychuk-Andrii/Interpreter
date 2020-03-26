@@ -7,7 +7,7 @@ private:
 	int idx, ln, col;
 
 public:
-	Position(){idx = 0; ln = 0; col = 0;};
+	Position(){idx = 0; ln = 1; col = 1;};
 	int getPos(){return idx;};
 	int getLine(){return ln;};
 	int getCol(){return col;};

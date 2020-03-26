@@ -15,7 +15,7 @@ public:
 	Action(int a, int x, Position p, Err *e):Value(p, e){act_c = 0; act = a; val = x;}
 
     std::string represent();
-	double getVal(){return val;}
+	int getVal(){return val;}
 	double getAct(){return act;}
     void actInit(){}
 
