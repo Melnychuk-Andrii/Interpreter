@@ -168,8 +168,10 @@ SNode* Parser::func_expr()
 		}
 	}else if (cur_tok->getType() == token_type::tIDENT)
 	{
+		f_tok = cur_tok;
+		advance();
 		next_ops = factor();
-		return crNodeChild(NULL, next_ops, cur_tok, cur_tok->getPos());
+		return crNodeChild(NULL, next_ops, f_tok, f_tok.getPos());
 	}else
 	{
 		errors->parseErr();
