@@ -94,7 +94,6 @@ void Interpreter::eventChecker()
 
 Value* Interpreter::visitActionOp(SNode *node)
 {
-	if (inEvent == 0) eventChecker();
 	int count = 0;
 
 	if (node->left)
@@ -104,6 +103,7 @@ Value* Interpreter::visitActionOp(SNode *node)
 
 	for (int i = 0; i < count; ++i)
 	{
+		if (inEvent == 0) eventChecker();
 		if (node->data->getValueIdx() == get_keyword_id("move"))
 		{
 			if (orient == 0)

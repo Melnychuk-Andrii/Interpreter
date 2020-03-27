@@ -71,6 +71,7 @@ void __fastcall TForm1::RunCode(TObject *Sender)
 		result = inter.visit(root);
 		if (errors.happened())
 			Memo2->Text = Memo2->Text + errors.printify().c_str();
+        freeNode(root);
 	}
 }
 //---------------------------------------------------------------------------
