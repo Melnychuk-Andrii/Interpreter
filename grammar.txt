@@ -1,0 +1,27 @@
+expr      : c_exp ((KEYWORD:AND|KEYWORD:OR) c_exp)*
+		
+c_expr    : a_expr ((EQ|LT|GT|LTE|GTE) a_expr)*
+		  : NOT c_exp
+		
+a_expr    : term ((PLUS|MINUS) term)*
+
+term      : factor ((MUL|DIV) factor)*
+
+factor    : (PLUS|MINUS) factor
+		  : INT|FLOAT
+		  : KEYWORD:POS_X|POS_Y|ITEM_COUNT|ITEMS_LEFT
+		  : LPAR expr RPAR
+		  : if_expr
+		  : while_expr
+		  : event_def
+		  : oper_def
+	
+if_expr   : KEYWORD:IF expr KEYWORD:THEN expr (KEYWORD:ELSE expr)?
+	
+while_expr: KEYWORD:WHILE expr KEYWORD:THEN expr
+
+event_def : KEYWORD:EVENT IDENTIFIER?
+			LPAR expr RPAR
+			LPAR expr RPAR
+
+oper_def  : KEYWORD[0..4] expr ENDL (factor)?
