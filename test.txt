@@ -1,0 +1,26 @@
+while (ITEMS_LEFT > 0) then {
+if (isWallLeft = 0) then
+{
+		turnleft();
+		move();
+	}else{
+		if (isWallFront = 0) then
+		{
+			move();
+		}else{
+			if (isWallRight = 0) then
+			{
+				turnright();
+				move();
+			}else{
+				turnright(2);
+				move();
+			}
+		}
+	}
+}
+
+EVENT onFruit(isFruit)
+{
+	collect();
+}
